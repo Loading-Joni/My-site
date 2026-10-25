@@ -1,0 +1,134 @@
+/* Квиз: 6 вопросов → ЦА и тариф.
+   Разметка шагов лежит в HTML, скрипт только считает веса и переключает шаги.
+   Ответы хранятся в data-w="local:business:scale". */
+
+(function () {
+  'use strict';
+
+  var quiz = document.querySelector('.quiz');
+  if (!quiz) return;
+
+  var steps = Array.prototype.slice.call(quiz.querySelectorAll('.quiz__step'));
+  var result = quiz.querySelector('.quiz__result');
+  var fill = quiz.querySelector('.progress__fill');
+  var count = quiz.querySelector('.progress__count');
+  var back = quiz.querySelector('.quiz__back');
+
+  var QUESTIONS = steps.filter(function (s) { return s.getAttribute('data-answer') !== 'result'; });
+  var answers = {};
+  var index = 0;
+
+  var PLANS = {
+    local: { name: 'Старт', price: '15 000 ₽ / мес', page: '/for-local', subscribe: '/subscribe/start' },
+    business: { name: 'Бизнес', price: '30 000 ₽ / мес', page: '/for-business', subscribe: '/subscribe/business' },
+    scale: { name: 'Премиум', price: '90 000 ₽ / мес', page: '/for-scale', subscribe: '/subscribe/premium' }
+  };
+
+  function show(i) {
+    steps.forEach(function (s) { s.removeAttribute('data-active'); });
+    if (result) result.removeAttribute('data-active');
+
+    if (i === null) {
+      if (result) result.setAttribute('data-active', 'true');
+      if (fill) fill.style.width = '100%';
+      if (count) count.textContent = 'Готово';
+      if (back) back.hidden = false;
+      return;
+    }
+
+    QUESTIONS[i].setAttribute('data-active', 'true');
+    if (fill) fill.style.width = Math.round((i / QUESTIONS.length) * 100) + '%';
+    if (count) count.textContent = (i + 1) + ' из ' + QUESTIONS.length;
+    if (back) back.hidden = i === 0;
+
+    var first = QUESTIONS[i].querySelector('.quiz__answer');
+    if (first && quiz.getAttribute('data-touched') === 'true') first.focus();
+  }
+
+  function leader() {
+    var total = { local: 0, business: 0, scale: 0 };
+    Object.keys(answers).forEach(function (q) {
+      var parts = answers[q].split(':');
+      total.local += Number(parts[0]) || 0;
+      total.business += Number(parts[1]) || 0;
+      total.scale += Number(parts[2]) || 0;
+    });
+    return Object.keys(total).sort(function (a, b) { return total[b] - total[a]; })[0];
+  }
+
+  function finish() {
+    var key = leader();
+    var plan = PLANS[key];
+
+    try {
+      sessionStorage.setItem('da:quiz', JSON.stringify({
+        audience: key,
+        tariff: plan.name,
+        answers: answers
+      }));
+    } catch (e) { /* приватный режим */ }
+
+    /* Форма на этой же странице уже отрисована — main.js её не тронет,
+       поэтому подставляем результат здесь. */
+    document.querySelectorAll('form.form').forEach(function (form) {
+      var a = form.querySelector('[name="audience"]');
+      var t = form.querySelector('[name="tariff"]');
+      if (a) a.value = key;
+      if (t) t.value = plan.name;
+    });
+
+    if (result) {
+      var name = result.querySelector('[data-out="plan"]');
+      var price = result.querySelector('[data-out="price"]');
+      if (name) name.textContent = plan.name;
+      if (price) price.textContent = plan.price;
+
+      result.querySelectorAll('[data-out="page"]').forEach(function (a) { a.href = plan.page; });
+      result.querySelectorAll('[data-out="subscribe"]').forEach(function (a) { a.href = plan.subscribe; });
+    }
+
+    show(null);
+    quiz.setAttribute('data-touched', 'true');
+  }
+
+  QUESTIONS.forEach(function (step, i) {
+    var id = step.getAttribute('data-question');
+
+    step.querySelectorAll('.quiz__answer').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        step.querySelectorAll('.quiz__answer').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+        btn.setAttribute('aria-pressed', 'true');
+        answers[id] = btn.getAttribute('data-w') || '0:0:0';
+        index = i;
+
+        window.setTimeout(function () {
+          if (i === QUESTIONS.length - 1) { finish(); } else { index = i + 1; show(index); }
+        }, reduced() ? 0 : 220);
+      });
+    });
+  });
+
+  function reduced() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  if (back) {
+    back.addEventListener('click', function () {
+      if (result && result.getAttribute('data-active') === 'true') { index = QUESTIONS.length - 1; }
+      else { index = Math.max(0, index - 1); }
+      show(index);
+    });
+  }
+
+  var restart = quiz.querySelector('[data-action="restart"]');
+  if (restart) {
+    restart.addEventListener('click', function () {
+      answers = {};
+      quiz.querySelectorAll('.quiz__answer').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+      index = 0;
+      show(index);
+    });
+  }
+
+  show(0);
+})();

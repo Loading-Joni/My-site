@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" width="600" height="750" role="img" aria-label="Заглушка для фотографии">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b2633"/>
+      <stop offset="1" stop-color="#121923"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="750" fill="url(#bg)"/>
+
+  <!-- Технические линии макета -->
+  <g stroke="#5b6b7c" stroke-width="1" opacity="0.35" fill="none">
+    <path d="M60 0v750M540 0v750M0 120h600M0 630h600"/>
+    <path d="M60 120h480v510H60z" stroke-dasharray="6 8"/>
+  </g>
+
+  <!-- Силуэт плеч и головы -->
+  <g fill="#0a0d12" opacity="0.55">
+    <ellipse cx="300" cy="330" rx="96" ry="118"/>
+    <path d="M120 750c0-108 80-172 180-172s180 64 180 172z"/>
+  </g>
+
+  <!-- Единственный акцент -->
+  <path d="M300 212v-58" stroke="#d9a441" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="300" cy="148" r="4" fill="#d9a441"/>
+
+  <g fill="#9aa7b3" font-family="Georgia, serif" text-anchor="middle">
+    <text x="300" y="690" font-size="19" letter-spacing="1.5">Фото эксперта</text>
+    <text x="300" y="718" font-size="14" fill="#5b6b7c" font-family="Arial, sans-serif">чёрно-белое, 4:5</text>
+  </g>
+</svg>

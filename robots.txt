@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Служебные страницы и посадочные под рекламу — вне индекса
+Disallow: /thanks
+Disallow: /checklist/thanks
+Disallow: /lp/
+Disallow: /cases/1
+Disallow: /cases/2
+Disallow: /cases/3
+Disallow: /cases/4
+Disallow: /404
+
+Sitemap: https://direct-ad.ru/sitemap.xml
